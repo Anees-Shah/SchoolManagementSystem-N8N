@@ -1,0 +1,629 @@
+{
+  "name": "4 Payment Processing",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1Mxgocs28UZyD4o8HGywadmksaZmv5gd2DCiWCV1TsHs",
+          "mode": "list",
+          "cachedResultName": "Payments",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Mxgocs28UZyD4o8HGywadmksaZmv5gd2DCiWCV1TsHs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Mxgocs28UZyD4o8HGywadmksaZmv5gd2DCiWCV1TsHs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ReceiptID": "={{$json[\"ReceiptID\"] || (\"R-\" + (new Date()).getFullYear() + \"-\" + String(Date.now()).slice(-6))}}\n",
+            "ReceiptURL": "=",
+            "PaymentDate": "={{$json[\"PaymentDate\"] || new Date().toISOString().slice(0,10)}}\n",
+            "Notes": "={{$json[\"Notes\"] || \"Payment recorded and receipt generated.\"}}\n",
+            "Status": "={{$json[\"Status\"] || \"Paid\"}}\n",
+            "PaymentID": "={{ $json.PaymentID }}",
+            "StudentID": "={{ $json.StudentID }}",
+            "StudentName": "={{ $json.StudentName }}",
+            "Class": "={{ $json.Class }}",
+            "Amount": "={{ $json.Amount }}",
+            "Currency": "={{ $json.Currency }}",
+            "PaymentMethod": "={{ $json.PaymentMethod }}",
+            "ParentName": "={{ $json.ParentName }}",
+            "ParentEmail": "={{ $json.ParentEmail }}"
+          },
+          "matchingColumns": [
+            "PaymentID"
+          ],
+          "schema": [
+            {
+              "id": "PaymentID",
+              "displayName": "PaymentID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "StudentID",
+              "displayName": "StudentID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "StudentName",
+              "displayName": "StudentName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Class",
+              "displayName": "Class",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount",
+              "displayName": "Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PaymentMethod",
+              "displayName": "PaymentMethod",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PaymentDate",
+              "displayName": "PaymentDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reference",
+              "displayName": "Reference",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ReceiptID",
+              "displayName": "ReceiptID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ReceiptURL",
+              "displayName": "ReceiptURL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ParentName",
+              "displayName": "ParentName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ParentEmail",
+              "displayName": "ParentEmail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        944,
+        -688
+      ],
+      "id": "ea0768a8-1521-4dd8-87d2-2c687f33b0f4",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WZKYAY9tUlUDXAFm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process only the FIRST payment row that does not yet have a ReceiptID\n// Skip all previous rows that already have receipts\n\nconst items = $input.all();\nlet output = [];\n\n// Loop through all rows, find the first unprocessed one\nfor (const item of items) {\n  const inItem = item.json;\n\n  const StudentID = (inItem.StudentID || '').toString().trim();\n  const Amount = Number(inItem.Amount || 0);\n  const ParentEmail = (inItem.ParentEmail || '').toString().trim();\n  const ReceiptID = (inItem.ReceiptID || inItem[\"Receipt Id\"] || '').toString().trim();\n\n  // Skip if this row already processed\n  if (ReceiptID) continue;\n\n  // Validate required fields\n  if (!StudentID || Amount <= 0 || !ParentEmail) {\n    console.log(`Invalid row skipped — StudentID:${StudentID}, Amount:${Amount}, ParentEmail:${ParentEmail}`);\n    continue;\n  }\n\n  // Return only this first valid, unprocessed row\n  output.push({\n    json: {\n      ...inItem,\n      StudentID,\n      Amount,\n      ParentEmail,\n      valid: true\n    }\n  });\n\n  // Stop after first match\n  break;\n}\n\n// If no new unprocessed rows found, return empty to stop workflow\nif (output.length === 0) {\n  console.log(\"No new unprocessed payment found (all have ReceiptID).\");\n  return [];\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        -592
+      ],
+      "id": "855cf2d6-80da-470c-8065-d2aa29c9f9c1",
+      "name": "Function – Normalize & Validate Payment"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1Mxgocs28UZyD4o8HGywadmksaZmv5gd2DCiWCV1TsHs",
+          "mode": "list",
+          "cachedResultName": "Payments",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Mxgocs28UZyD4o8HGywadmksaZmv5gd2DCiWCV1TsHs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Mxgocs28UZyD4o8HGywadmksaZmv5gd2DCiWCV1TsHs/edit#gid=0"
+        },
+        "options": {}
+      },
+      "name": "Google Sheets Trigger – Payment Recorded1",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        48,
+        -592
+      ],
+      "webhookId": "",
+      "id": "7b2d8013-1fca-4dee-8bfb-f86688fcd5d1",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "IwLJQrSVRwqO8XBR",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Robust idempotency filter for receipts\n// - Accepts single item, multiple items, or a single item whose .json is an array\n// - Recognizes many ReceiptID key name variants\n// - Logs counts for debugging\n// - If something unexpected happens, falls back to returning original items (safe)\n\n// helper: normalize incoming wrapper into array of items { json: {...} }\nfunction normalizeInputs(rawInputs) {\n  if (!rawInputs || rawInputs.length === 0) return [];\n  // If n8n passed a single item whose json is an array of rows, expand it\n  if (rawInputs.length === 1 && Array.isArray(rawInputs[0].json)) {\n    return rawInputs[0].json.map(r => ({ json: r }));\n  }\n  // If some items have .json.data or .json.rows arrays, flatten them into items\n  const expanded = [];\n  for (const it of rawInputs) {\n    const j = it.json;\n    if (Array.isArray(j)) {\n      j.forEach(r => expanded.push({ json: r }));\n    } else if (Array.isArray(j && j.data)) {\n      j.data.forEach(r => expanded.push({ json: r }));\n    } else if (Array.isArray(j && j.rows)) {\n      j.rows.forEach(r => expanded.push({ json: r }));\n    } else {\n      expanded.push(it);\n    }\n  }\n  return expanded;\n}\n\n// helper: get ReceiptID value from a row with flexible key names\nfunction getReceiptId(row) {\n  if (!row || typeof row !== 'object') return '';\n  const keys = ['ReceiptID','Receipt Id','receipt_id','receiptId','receipt','receiptID','receipt id'];\n  for (const k of keys) {\n    if (Object.prototype.hasOwnProperty.call(row, k)) {\n      const v = row[k];\n      if (v === null || v === undefined) return '';\n      return String(v).trim();\n    }\n    // also try normalized lower-case keys\n    const lowerKey = Object.keys(row).find(x => x.toLowerCase().replace(/\\s+/g,'') === k.toLowerCase().replace(/\\s+/g,''));\n    if (lowerKey) {\n      const v = row[lowerKey];\n      if (v !== undefined && v !== null) return String(v).trim();\n    }\n  }\n  return '';\n}\n\ntry {\n  let inputs = normalizeInputs($input.all());\n  console.log('DEBUG: inputs length (after normalize):', inputs.length);\n\n  // Filter items that do NOT have a ReceiptID (i.e., need processing)\n  const toProcess = [];\n  const skipped = [];\n  for (const it of inputs) {\n    const rid = getReceiptId(it.json);\n    if (rid) skipped.push({ json: it.json, ReceiptID: rid });\n    else toProcess.push(it);\n  }\n\n  console.log('DEBUG: toProcess:', toProcess.length, 'skipped:', skipped.length);\n\n  // Return items needing processing (each as { json: ... })\n  // If nothing to process, return empty array (workflow will skip downstream)\n  return toProcess;\n\n} catch (err) {\n  // On unexpected error, log and return original inputs (fail-safe)\n  console.error('ERROR in idempotency filter:', err);\n  // Return original items instead of blocking the flow\n  return $input.all().map(i => ({ json: i.json }));\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        -592
+      ],
+      "id": "7ebb2ec3-227d-4ca8-b59c-df0a09b82bf0",
+      "name": "Function – Skip Already Processed1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate Receipt ID & PaymentDate\nconst item = $input.all()[0].json;\nconst now = new Date();\nconst y = now.getFullYear();\nconst suffix = String(Date.now()).slice(-6);\nconst receiptId = `R-${y}-${suffix}`;\n\nreturn [{ json: { ...item, ReceiptID: receiptId, Status: 'Paid', PaymentDate: now.toISOString().slice(0,10) } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -592
+      ],
+      "id": "a47748ba-8908-46fd-a0c2-8a70ebd38c34",
+      "name": "Function – Generate Receipt1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate Receipt ID & PaymentDate (robust name/amount detection)\nconst item = $input.all()[0].json || {};\nconst now = new Date();\nconst y = now.getFullYear();\nconst suffix = String(Date.now()).slice(-6);\nconst receiptId = `R-${y}-${suffix}`;\n\n// Try many common field names for Name and Amount, then sensible fallbacks\nconst resolvedName =\n  item.Name ??\n  item.name ??\n  item.CustomerName ??\n  item.customerName ??\n  item.FullName ??\n  item.fullName ??\n  item.clientName ??\n  item.ClientName ??\n  item['Customer Name'] ??\n  item['Full Name'] ??\n  item.email ?? // use email if no name available\n  \"\" ;\n\nconst resolvedAmount =\n  item.Amount ??\n  item.amount ??\n  item.PaymentAmount ??\n  item.paymentAmount ??\n  item.total ??\n  item.Total ??\n  0;\n\n// Build receipt data: include original item fields plus guaranteed fields\nconst receiptData = {\n  ...item, // keep original data (so you don't lose any fields)\n  ReceiptID: receiptId,\n  Name: resolvedName,\n  Amount: resolvedAmount,\n  Status: 'Paid',\n  PaymentDate: now.toISOString().slice(0, 10),\n};\n\n// Convert the JSON object into text and binary\nconst jsonString = JSON.stringify(receiptData, null, 2);\nconst dataBuffer = Buffer.from(jsonString, 'utf8');\n\nreturn [\n  {\n    json: receiptData, // metadata available to downstream nodes\n    binary: {\n      data: {\n        data: dataBuffer.toString('base64'),\n        mimeType: 'application/json',\n        fileName: `Receipt_${receiptId}.json`,\n      },\n    },\n  },\n];\n"
+      },
+      "name": "Generate Receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        -496
+      ],
+      "id": "59770b72-e7c4-4615-ae5b-440c7364d472"
+    },
+    {
+      "parameters": {
+        "name": "=Receipt_{{$json[\"ReceiptID\"]}}.html",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1Ha3VePrtlFwwtPqipbshB4EDlc6CHoTA",
+          "mode": "list",
+          "cachedResultName": "AI Testing",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1Ha3VePrtlFwwtPqipbshB4EDlc6CHoTA"
+        },
+        "options": {
+          "simplifyOutput": false
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1840,
+        -400
+      ],
+      "id": "5b71d40c-133b-44f6-8f94-3a71042925b1",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "1EdqNmPDdqfCpQWd",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "value": "={{$json[\"id\"]}}",
+          "mode": "id"
+        },
+        "name": "=Receipt_{{$json[\"ReceiptID\"]}} (Doc)",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2064,
+        -400
+      ],
+      "id": "9d4ad09e-ab6c-499a-b364-4057c3b9429a",
+      "name": "Copy file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "1EdqNmPDdqfCpQWd",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{$json[\"id\"]}}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "application/pdf",
+              "drawingsToFormat": "application/pdf",
+              "slidesToFormat": "application/pdf"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2288,
+        -400
+      ],
+      "id": "4f58a3ea-b6e9-4ff1-9776-dc747a8c6a21",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "1EdqNmPDdqfCpQWd",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        -496
+      ],
+      "id": "40364628-de35-4e36-b4d3-3652b08ddc8b",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item.json;\n\n// Use either item.data or item depending on your structure\nconst data = item.data || item;\n\nconst html = `\n  <html>\n  <head>\n    <style>\n      body { font-family: Arial; margin: 40px; }\n      h1 { text-align: center; }\n      table { width: 100%; border-collapse: collapse; margin-top: 20px; }\n      td, th { border: 1px solid #ddd; padding: 8px; }\n      th { background-color: #f2f2f2; }\n    </style>\n  </head>\n  <body>\n    <h1>Payment Receipt</h1>\n    <p><strong>Receipt ID:</strong> ${data.ReceiptID}</p>\n    <p><strong>Student Name:</strong> ${data.StudentName}</p>\n    <p><strong>Class:</strong> ${data.Class}</p>\n    <p><strong>Amount:</strong> ${data.Amount} ${data.Currency}</p>\n    <p><strong>Payment Date:</strong> ${data.PaymentDate}</p>\n    <p><strong>Payment Method:</strong> ${data.PaymentMethod}</p>\n    <p><strong>Status:</strong> ${data.Status}</p>\n    <p><strong>Notes:</strong> ${data.Notes}</p>\n  </body>\n  </html>\n`;\n\nconst htmlBuffer = Buffer.from(html, 'utf8');\n\nreturn [\n  {\n    json: data,\n    binary: {\n      data: {\n        data: htmlBuffer.toString('base64'),\n        mimeType: 'text/html',\n        fileName: `Receipt_${data.ReceiptID}.html`,\n      },\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        -400
+      ],
+      "id": "7ca6b012-13ad-4572-a65c-8dda7f292629",
+      "name": "Make HTML from JSON"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This function renames the downloaded file and sets the correct MIME type\nconst inputItem = $input.all()[0];\nconst itemJson = inputItem.json;\n\n// Check if binary data exists\nif (inputItem.binary && inputItem.binary.data) {\n    const binaryData = inputItem.binary.data;\n    const receiptID = itemJson.ReceiptID;\n\n    // Modify the binary file's metadata\n    binaryData.fileName = `Receipt_${receiptID}.pdf`;\n    binaryData.mimeType = 'application/pdf';\n}\n\n// Return the item with the updated binary metadata\nreturn [inputItem];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2512,
+        -400
+      ],
+      "id": "567ac345-2e56-47f4-b751-bd0167fefa77",
+      "name": "Fix PDF Metadata"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This function renames the downloaded file and sets the correct MIME type\nconst inputItem = $input.all()[0];\nconst itemJson = inputItem.json;\n\n// Check if binary data exists\nif (inputItem.binary && inputItem.binary.data) {\n    const binaryData = inputItem.binary.data;\n    const receiptID = itemJson.ReceiptID;\n\n    // Modify the binary file's metadata\n    binaryData.fileName = `Receipt_${receiptID}.pdf`;\n    binaryData.mimeType = 'application/pdf';\n}\n\n// Return the item with the updated binary metadata\nreturn [inputItem];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        -400
+      ],
+      "id": "4f6a3d4b-b567-42d0-85e1-65aa97afa22b",
+      "name": "Fix PDF Metadata1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.data.ParentEmail }}",
+        "subject": "=Payment Received for  {{ $json.data.StudentName }}",
+        "message": "=<p>Dear {{ $json.data.ParentName }},</p>\n\n<p>We are thankful to you for receipt of <strong>Fee</strong> for {{ $json.data.StudentName }} amount <strong>absent</strong> {{ $json.data.Amount }} <strong>{{ $json.data.Currency }} </strong>.</p>\n\n<p>Thank you for your  cooperation.</p>\n\n<p>Best regards,<br>\n<strong>School Administration</strong></p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1392,
+        -592
+      ],
+      "id": "26d4993f-8b6b-4e0d-b760-ef08556fba0c",
+      "name": "Send a message",
+      "webhookId": "6150662d-f7ec-4755-aaee-9e71dc6e51a5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jXqa38zDEfngyw3f",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Function – Normalize & Validate Payment": {
+      "main": [
+        [
+          {
+            "node": "Function – Skip Already Processed1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger – Payment Recorded1": {
+      "main": [
+        [
+          {
+            "node": "Function – Normalize & Validate Payment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function – Skip Already Processed1": {
+      "main": [
+        [
+          {
+            "node": "Function – Generate Receipt1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function – Generate Receipt1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        []
+      ]
+    },
+    "Generate Receipt": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Copy file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy file": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Fix PDF Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Make HTML from JSON",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Make HTML from JSON": {
+      "main": [
+        [
+          {
+            "node": "Fix PDF Metadata1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fix PDF Metadata": {
+      "main": [
+        []
+      ]
+    },
+    "Fix PDF Metadata1": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f13cba80-b223-4300-9290-c6184966da19",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b35aab958c5ffa9d3a9eb8ec04f35f0612bdfdfba50760aa417239be17ecdc0"
+  },
+  "id": "ziB4o3y8bSubIXiB",
+  "tags": []
+}

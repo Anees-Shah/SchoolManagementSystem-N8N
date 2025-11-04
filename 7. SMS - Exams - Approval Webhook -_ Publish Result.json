@@ -1,0 +1,338 @@
+{
+  "name": "7. SMS - Exams - Approval Webhook -> Publish Result",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "exams/approve",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "Webhook - Approve Exam",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8f6f2a21-7fee-4aeb-b483-e1a5f2f01f3f",
+      "webhookId": "599c3cd8-795e-4b93-a732-fea392d6f2b5"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1-iGaSicoQf3gAC_bMt62k-_u64CBs9TPN4F6Xm6kocU",
+          "mode": "list",
+          "cachedResultName": "Exams",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-iGaSicoQf3gAC_bMt62k-_u64CBs9TPN4F6Xm6kocU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-iGaSicoQf3gAC_bMt62k-_u64CBs9TPN4F6Xm6kocU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "2e0810d0-e411-4469-99f6-a16198fb181e",
+      "name": "Read Exams Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WZKYAY9tUlUDXAFm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Robust finder for exam row to update\n// Logs inputs and extracts parameters from many possible places.\n\nconsole.log('ALL INPUTS:', JSON.stringify($input.all(), null, 2));\n\nconst all = $input.all();\n\n// --- Find webhook item (contains query/params/body) ---\nlet webhookItem = all.find(i => i.json && (i.json.query || i.json.body || i.json.params || i.json.headers));\nif (!webhookItem && all.length) webhookItem = all[0]; // fallback\n\nconst webhookJson = webhookItem ? webhookItem.json : {};\nconst q = webhookJson.query || webhookJson.body || webhookJson.params || {};\n\n// Also accept plain JSON keys at top-level\nconst studentId = (q.studentId || q.StudentID || webhookJson.studentId || webhookJson.StudentID || '').toString().trim();\nconst exam = (q.exam || q.Exam || webhookJson.exam || webhookJson.Exam || '').toString().trim();\nconst subject = (q.subject || q.Subject || webhookJson.subject || webhookJson.Subject || '').toString().trim();\n\nconsole.log('Extracted params -> studentId:', studentId, 'exam:', exam, 'subject:', subject);\n\n// --- Find sheet input (any input that looks like sheet rows) ---\nlet sheetInput = all.find(i => Array.isArray(i.json) || (i.json && (i.json.length || i.json.StudentID || i.json.Exam || i.json.Subject)));\nif (!sheetInput) {\n  // maybe the sheet node provided items as separate executions; collect those\n  const possibleRows = all.filter(i => i.json && (i.json.StudentID || i.json.Exam || i.json.Subject));\n  if (possibleRows.length) {\n    const rows = possibleRows.map(i => i.json);\n    sheetInput = { json: rows };\n  }\n}\n\nif (!sheetInput || !sheetInput.json) {\n  return [{ json: { error: 'Missing Google Sheet data in Function input', inputs: $input.all().map(x=>x.json) } }];\n}\n\n// Normalize rows to array of objects\nconst rows = Array.isArray(sheetInput.json) ? sheetInput.json : [sheetInput.json];\n\nconsole.log('Rows count:', rows.length);\n\n// --- Find the first matching row where ResultPublished == \"No\" (case-insensitive) ---\nlet foundIndex = -1;\nlet rowData = null;\n\nfor (let i = 0; i < rows.length; i++) {\n  const r = rows[i];\n\n  // Try both object-style keys and positional array access\n  const rStudent = (r.StudentID || r.studentId || r[0] || '').toString().trim();\n  const rExam = (r.Exam || r.exam || r[1] || '').toString().trim();\n  const rSubject = (r.Subject || r.subject || r[2] || '').toString().trim();\n  const rPublished = (r.ResultPublished || r.resultPublished || r[7] || '').toString().trim().toLowerCase();\n\n  if (rStudent === studentId && rExam === exam && rSubject === subject && rPublished === 'no') {\n    foundIndex = i;\n    rowData = r;\n    break;\n  }\n}\n\nif (foundIndex === -1) {\n  return [{ json: { error: 'Not found or already published', studentId, exam, subject, rowsChecked: rows.length } }];\n}\n\n// Google Sheets rows are 1-indexed; add +1 for header row\nconst updateRowIndex = foundIndex + 2;\n\nconsole.log('Found row at index (sheet-row):', updateRowIndex, 'rowData:', JSON.stringify(rowData));\n\nreturn [{ json: { success: true, rowIndex: updateRowIndex, rowData } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "d0f16701-66f2-43b6-b82d-3e4aa0a2c947",
+      "name": "Find exam row to update"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1-iGaSicoQf3gAC_bMt62k-_u64CBs9TPN4F6Xm6kocU",
+          "mode": "list",
+          "cachedResultName": "Exams",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-iGaSicoQf3gAC_bMt62k-_u64CBs9TPN4F6Xm6kocU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-iGaSicoQf3gAC_bMt62k-_u64CBs9TPN4F6Xm6kocU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ExamID": "={{ $json.rowData.ExamID }}",
+            "ResultPublished": "=Yes",
+            "Grade": "={{ $json.rowData.Grade }}",
+            "TotalMarks": "={{ $json.rowData.TotalMarks }}",
+            "MarksObtained": "={{ $json.rowData.MarksObtained }}",
+            "Subject": "={{ $json.rowData.Subject }}",
+            "StudentName": "={{ $json.rowData.StudentName }}",
+            "StudentID": "={{ $json.rowData.StudentID }}"
+          },
+          "matchingColumns": [
+            "ExamID"
+          ],
+          "schema": [
+            {
+              "id": "ExamID",
+              "displayName": "ExamID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "StudentID",
+              "displayName": "StudentID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "StudentName",
+              "displayName": "StudentName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MarksObtained",
+              "displayName": "MarksObtained",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TotalMarks",
+              "displayName": "TotalMarks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Grade",
+              "displayName": "Grade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ResultPublished",
+              "displayName": "ResultPublished",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        0
+      ],
+      "id": "5d9cb38f-9035-4b3b-8868-7ea36b9f3e69",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WZKYAY9tUlUDXAFm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.ParentEmail }}",
+        "subject": "=Exam Result Published for {{ $json.StudentName }}",
+        "message": "=<div style=\"font-family: Arial, sans-serif; background-color: #f9fafc; padding: 20px; border-radius: 10px;\">\n  <h2 style=\"color: #333; margin-top: 0;\">Exam Result Published</h2>\n\n  <p>Dear {{$json[\"ParentName\"] || $json[\"parentName\"] || 'Parent'}},</p>\n\n  <p>The exam result for <strong>{{$json[\"StudentName\"] || $json[\"studentName\"]}}</strong> has been published. Below are the details:</p>\n\n  <table style=\"border-collapse: collapse; width: 100%; margin: 20px 0; background: #ffffff;\">\n    <tr>\n      <td style=\"padding: 8px; border: 1px solid #e6e9ee; width: 40%;\"><strong>Exam ID</strong></td>\n      <td style=\"padding: 8px; border: 1px solid #e6e9ee;\">{{ $('Update row in sheet').item.json.ExamID }}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border: 1px solid #e6e9ee;\"><strong>Student</strong></td>\n      <td style=\"padding: 8px; border: 1px solid #e6e9ee;\">{{$json[\"StudentName\"] || $json.rowData?.StudentName || $json.rowData?.[2] || ''}}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border: 1px solid #e6e9ee;\"><strong>Subject</strong></td>\n      <td style=\"padding: 8px; border: 1px solid #e6e9ee;\">{{ $('Update row in sheet').item.json.Subject }}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border: 1px solid #e6e9ee;\"><strong>Marks Obtained</strong></td>\n      <td style=\"padding: 8px; border: 1px solid #e6e9ee;\">{{ $('Update row in sheet').item.json.MarksObtained }} / {{ $('Update row in sheet').item.json.TotalMarks }}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border: 1px solid #e6e9ee;\"><strong>Grade</strong></td>\n      <td style=\"padding: 8px; border: 1px solid #e6e9ee;\">{{ $('Update row in sheet').item.json.Grade }}</td>\n    </tr>\n  </table>\n\n  <p>If you have any questions about this result, please reply to this email or contact the school office.</p>\n\n  <p style=\"margin-top: 20px; font-size: 13px; color: #555;\">\n    Regards,<br>\n    <strong>Your School Name</strong><br>\n    This is an automated message from the School Examination System.\n  </p>\n</div>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "4d79d723-1fdb-4527-9b1f-e125c2c0523b",
+      "name": "Send a message",
+      "webhookId": "469f2b28-a109-4ed5-bdc7-e251c8a63c11",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jXqa38zDEfngyw3f",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Mxgocs28UZyD4o8HGywadmksaZmv5gd2DCiWCV1TsHs",
+          "mode": "list",
+          "cachedResultName": "Payments",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Mxgocs28UZyD4o8HGywadmksaZmv5gd2DCiWCV1TsHs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Mxgocs28UZyD4o8HGywadmksaZmv5gd2DCiWCV1TsHs/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "StudentName",
+              "lookupValue": "={{ $json.StudentName }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        896,
+        0
+      ],
+      "id": "0c7b4748-31be-4b78-b2f2-c7d83daf58be",
+      "name": "Lookup Student",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WZKYAY9tUlUDXAFm",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook - Approve Exam": {
+      "main": [
+        [
+          {
+            "node": "Read Exams Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Exams Sheet": {
+      "main": [
+        [
+          {
+            "node": "Find exam row to update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find exam row to update": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Lookup Student",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Student": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7c16d3dc-bde0-475f-af60-f40775932cf7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b35aab958c5ffa9d3a9eb8ec04f35f0612bdfdfba50760aa417239be17ecdc0"
+  },
+  "id": "p2s8e96g0VQivIsi",
+  "tags": []
+}

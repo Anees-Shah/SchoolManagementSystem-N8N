@@ -1,0 +1,140 @@
+{
+  "name": "3. SMS - Attendance Daily Summary (Cron)",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        }
+      },
+      "name": "Cron - Daily 09:00",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0c3481aa-8b42-4dff-917c-80c7b3143f9d"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Yw49p3outWVBOJHzzD29StRd6McP5EX7QaI65Tc1Xi4",
+          "mode": "list",
+          "cachedResultName": "SMS - Attendance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yw49p3outWVBOJHzzD29StRd6McP5EX7QaI65Tc1Xi4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Attendance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yw49p3outWVBOJHzzD29StRd6McP5EX7QaI65Tc1Xi4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "6c7d447d-11fe-4b78-8238-f8dfeb6e9f62",
+      "name": "Read Attendance Sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WZKYAY9tUlUDXAFm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// -------------------------------------------\n// Attendance Summary (Per-Class & Per-Teacher)\n// -------------------------------------------\n\n// Column names (match your sheet exactly)\nconst fields = {\n  date: \"Date (YYYY-MM-DD)\",\n  name: \"StudentName\",\n  present: \"Present\",\n  teacher: \"MarkedBy (TeacherID)\",\n  class: \"Class\"\n};\n\n// Get all rows from previous node\nconst rows = $input.all().map(i => i.json);\n\n// Current date\nconst today = new Date().toISOString().split('T')[0];\n\n// Totals\nlet totalPresent = 0;\nlet totalAbsent = 0;\nlet perClass = {};\nlet perTeacher = {};\n\n// Build list of all students\nlet listText = `Attendance Summary - ${today}\\nStudent Name\\tStatus\\n`;\n\nfor (const row of rows) {\n  const student = row[fields.name];\n  const presentVal = String(row[fields.present] || \"\").trim().toLowerCase();\n  const teacher = row[fields.teacher] || \"Unknown\";\n  const className = row[fields.class] || \"Unspecified\";\n\n  // skip empty rows\n  if (!student || !presentVal) continue;\n\n  const isPresent = presentVal.startsWith(\"y\");\n  const isAbsent = presentVal.startsWith(\"n\");\n\n  listText += `${student}\\t${isPresent ? \"Yes\" : isAbsent ? \"No\" : \"-\"}\\n`;\n\n  // Count totals\n  if (isPresent) totalPresent++;\n  if (isAbsent) totalAbsent++;\n\n  // Per Class tracking\n  if (!perClass[className]) perClass[className] = { present: 0, absent: 0, total: 0 };\n  perClass[className].total++;\n  if (isPresent) perClass[className].present++;\n  if (isAbsent) perClass[className].absent++;\n\n  // Per Teacher tracking\n  if (!perTeacher[teacher]) perTeacher[teacher] = { present: 0, absent: 0, total: 0 };\n  perTeacher[teacher].total++;\n  if (isPresent) perTeacher[teacher].present++;\n  if (isAbsent) perTeacher[teacher].absent++;\n}\n\n// Totals\nconst total = totalPresent + totalAbsent;\n\n// Per-Class breakdown\nlet classSummary = \"\\n\\n📚 Per Class Summary:\\n\";\nfor (const [cls, s] of Object.entries(perClass)) {\n  classSummary += `${cls}: Present = ${s.present}, Absent = ${s.absent}, Total = ${s.total}\\n`;\n}\n\n// Per-Teacher breakdown\nlet teacherSummary = \"\\n👩‍🏫 Per Teacher Summary:\\n\";\nfor (const [t, s] of Object.entries(perTeacher)) {\n  teacherSummary += `${t}: Present = ${s.present}, Absent = ${s.absent}, Total = ${s.total}\\n`;\n}\n\n// Final summary\nlet totalsText = `\\n\\nPresent: ${totalPresent}\\nAbsent: ${totalAbsent}\\nTotal: ${total}`;\nconst summaryText = listText + classSummary + teacherSummary + totalsText;\n\n// HTML Version\nlet html = `<h2>Attendance Summary - ${today}</h2>\n<table border=\"1\" cellspacing=\"0\" cellpadding=\"4\">\n<tr><th>Student Name</th><th>Status</th></tr>\n${rows.map(r => `<tr><td>${r[fields.name]}</td><td>${r[fields.present]}</td></tr>`).join(\"\")}\n</table>\n<h3>📚 Per Class Summary</h3><ul>\n${Object.entries(perClass).map(([cls, s]) => `<li>${cls}: Present = ${s.present}, Absent = ${s.absent}, Total = ${s.total}</li>`).join(\"\")}\n</ul>\n<h3>👩‍🏫 Per Teacher Summary</h3><ul>\n${Object.entries(perTeacher).map(([t, s]) => `<li>${t}: Present = ${s.present}, Absent = ${s.absent}, Total = ${s.total}</li>`).join(\"\")}\n</ul>\n<p><b>Overall:</b> Present = ${totalPresent}, Absent = ${totalAbsent}, Total = ${total}</p>`;\n\n// Output to next node\nreturn [{\n  json: {\n    date: today,\n    summaryText,\n    html,\n    totals: { totalPresent, totalAbsent, total },\n    perClass,\n    perTeacher\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "e7b2e822-609a-4879-a9a8-dc56f28ed595",
+      "name": "Build Summary1"
+    },
+    {
+      "parameters": {
+        "sendTo": "aneesahmed.shah@gmail.com",
+        "subject": "=Daily Attendance Summary — {{ $json[\"date\"] }}",
+        "message": "={{$json[\"html\"]}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "787ca11c-8024-4644-b896-785bd8d6fa7d",
+      "name": "Send a message",
+      "webhookId": "d5e2a497-4502-43c0-b7c6-1ff5ef7f5830",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jXqa38zDEfngyw3f",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cron - Daily 09:00": {
+      "main": [
+        [
+          {
+            "node": "Read Attendance Sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Attendance Sheet1": {
+      "main": [
+        [
+          {
+            "node": "Build Summary1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Summary1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "55e45b27-09c3-491f-a6ef-03b14001dcf4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b35aab958c5ffa9d3a9eb8ec04f35f0612bdfdfba50760aa417239be17ecdc0"
+  },
+  "id": "xkVaJeh5CMWoNdZv",
+  "tags": []
+}

@@ -1,0 +1,218 @@
+{
+  "name": "2. SMS - Attendance (Form -> Record -> Absence Alert)",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1Yw49p3outWVBOJHzzD29StRd6McP5EX7QaI65Tc1Xi4",
+          "mode": "list",
+          "cachedResultName": "SMS - Attendance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yw49p3outWVBOJHzzD29StRd6McP5EX7QaI65Tc1Xi4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Attendance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yw49p3outWVBOJHzzD29StRd6McP5EX7QaI65Tc1Xi4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "name": "Google Sheets Trigger - Attendance",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        496
+      ],
+      "id": "bf107620-4d26-4f5f-a5c0-63f273e27d76",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "IwLJQrSVRwqO8XBR",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json[\"ParentEmail\"] }}\n",
+        "subject": "=Absence Notification for {{ $json[\"StudentName\"] }}",
+        "message": "=<p>Dear {{ $json[\"ParentName\"] }},</p>\n\n<p>This is to inform you that <strong>{{ $json[\"StudentName\"] }}</strong> was marked <strong>absent</strong> on <strong>{{ $json[\"Date\"] }}</strong>.</p>\n\n<p>Please ensure to provide a reason for the absence by contacting the class teacher or school administration at your earliest convenience.</p>\n\n<p>Thank you for your attention and cooperation.</p>\n\n<p>Best regards,<br>\n<strong>School Administration</strong></p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1120,
+        496
+      ],
+      "id": "34d43e68-9916-43a6-8100-d68165e65a2c",
+      "name": "Send a message",
+      "webhookId": "bb382cca-3da8-4b34-a8ea-c36cb8b426eb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jXqa38zDEfngyw3f",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Yw49p3outWVBOJHzzD29StRd6McP5EX7QaI65Tc1Xi4",
+          "mode": "list",
+          "cachedResultName": "SMS - Attendance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yw49p3outWVBOJHzzD29StRd6McP5EX7QaI65Tc1Xi4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Attendance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yw49p3outWVBOJHzzD29StRd6McP5EX7QaI65Tc1Xi4/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Present",
+              "lookupValue": "No"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        496
+      ],
+      "id": "8c5e4be1-d66b-4068-a102-882aa31b1ce2",
+      "name": "Lookup Student",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WZKYAY9tUlUDXAFm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all rows from input (array of items)\nconst allRows = $input.all();\n\n// Return all rows as separate output items\nreturn allRows;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        496
+      ],
+      "id": "f8abe3ac-52f7-40ad-a21a-08b3074f47b0",
+      "name": "Normalize the row"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter only students whose \"Present\" field equals \"No\" (case-insensitive)\n\n// Get all incoming items (array)\nconst items = $input.all();\n\n// Prepare an array to hold matching rows\nconst output = [];\n\n// Loop through each row\nfor (const item of items) {\n  const val = String(item.json[\"Present\"] || \"\").trim().toLowerCase();\n  if (val === \"no\") {\n    output.push(item); // keep this student\n  }\n}\n\n// Return all matching rows (array of objects)\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        496
+      ],
+      "id": "94bd574e-d15d-45c7-8d5e-b8008da417aa",
+      "name": "If Absent Filter"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Find Parent Info (Accurate Matching Version) ---\n// Input 1: Absent students\n// Input 2: Students sheet\n\nconst absents = $input.all(0).map(i => i.json);\nconst students = $input.all(1).map(i => i.json);\n\nconst normalize = str => String(str || '').trim().toLowerCase();\n\nconst results = [];\n\nfor (const absent of absents) {\n  const sid = normalize(absent.StudentID);\n  const sname = normalize(absent.StudentName);\n  const sdate = normalize(absent.Date || absent[\"Date (YYYY-MM-DD)\"]);\n\n  let match;\n\n  // Step 1: Exact match by StudentID (if provided)\n  if (sid) {\n    match = students.find(s => normalize(s.StudentID || s[\"Student ID\"]) === sid);\n  }\n\n  // Step 2: Fallback - match by StudentName + Date (same attendance record)\n  if (!match) {\n    match = students.find(s =>\n      normalize(s.StudentName || s[\"Student Name\"]) === sname &&\n      normalize(s.Date || s[\"Date (YYYY-MM-DD)\"]) === sdate\n    );\n  }\n\n  if (match) {\n    results.push({\n      json: {\n        StudentName: match.StudentName || absent.StudentName || '',\n        ParentName: match.ParentName || match[\"Parent Name\"] || '',\n        ParentEmail: match.ParentEmail || match[\"Parent Email\"] || '',\n        Date: absent.Date || absent[\"Date (YYYY-MM-DD)\"] || '',\n        Status: absent.Present || \"No\",\n        Class: match.Class || match[\"Class\"] || '',\n        MarkedBy: match.MarkedBy || match[\"MarkedBy (TeacherID)\"] || ''\n      }\n    });\n  } else {\n    // fallback: still output the absent record if no match found\n    results.push({\n      json: {\n        StudentName: absent.StudentName || '',\n        ParentName: '',\n        ParentEmail: '',\n        Date: absent.Date || '',\n        Status: absent.Present || \"No\",\n        Class: absent.Class || '',\n        MarkedBy: absent.MarkedBy || ''\n      }\n    });\n  }\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        496
+      ],
+      "id": "94e88c75-970f-4395-863d-ac60bf2e74de",
+      "name": "Find Parent Info1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger - Attendance": {
+      "main": [
+        [
+          {
+            "node": "Normalize the row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Student": {
+      "main": [
+        [
+          {
+            "node": "Find Parent Info1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize the row": {
+      "main": [
+        [
+          {
+            "node": "If Absent Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Absent Filter": {
+      "main": [
+        [
+          {
+            "node": "Lookup Student",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Parent Info1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "27659495-9519-4a91-80fe-ab3c796dccbc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b35aab958c5ffa9d3a9eb8ec04f35f0612bdfdfba50760aa417239be17ecdc0"
+  },
+  "id": "3fTpoCDpp3ilNZId",
+  "tags": []
+}

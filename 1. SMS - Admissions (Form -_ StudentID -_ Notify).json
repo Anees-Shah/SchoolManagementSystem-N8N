@@ -1,0 +1,119 @@
+{
+  "name": "1. SMS - Admissions (Form -> StudentID -> Notify)",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1r-0kiTy6oaxVvz0vVVzQiVV9M0ofvpMkElFI0IDR0vE",
+          "mode": "list",
+          "cachedResultName": "School Management System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1r-0kiTy6oaxVvz0vVVzQiVV9M0ofvpMkElFI0IDR0vE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 684368676,
+          "mode": "list",
+          "cachedResultName": "Admissions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1r-0kiTy6oaxVvz0vVVzQiVV9M0ofvpMkElFI0IDR0vE/edit#gid=684368676"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "name": "Google Sheets Trigger - Admissions",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -864,
+        880
+      ],
+      "id": "9d9c5728-124a-4f86-8975-1009c284903e",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "IwLJQrSVRwqO8XBR",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Parents Email'] }}",
+        "subject": "=Admission confirmation: {{ $json['First Name'] }}",
+        "message": "=<p> Dear  {{ $json['Parents Name'] }},</p>  \n<p> Thank you for registering  {{ $json['First Name'] }} {{ $json['Last Name'] }}\nStudent ID: {{$json.StudentID}}\nClass: {{ $json.Class }}\nAdmission Date: {{$json.AdmissionDate}}\n\n<p> Regards,\n<p> School Admin",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -416,
+        880
+      ],
+      "id": "daa9ab67-59e0-4adb-92d5-85d4b1d07231",
+      "name": "Send Email - Admission Confirmation1",
+      "webhookId": "ba722618-3bae-4d2a-a474-7d4d2444bc6b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jXqa38zDEfngyw3f",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all incoming items (new rows from Google Sheets Trigger)\nconst allItems = $input.all();\nif (!allItems || allItems.length === 0) return [];\n\n// Take only the *last* added record\nconst lastItem = allItems[allItems.length - 1].json;\n\n// Generate unique StudentID (based on current year + timestamp)\nconst year = new Date().getFullYear();\nconst suffix = String(Date.now()).slice(-5);\nconst studentID = `S${year}-${suffix}`;\n\n// Return only the last record as output\nreturn [\n  {\n    json: {\n      ...lastItem, // keep all original fields (StudentName, ParentEmail, etc.)\n      StudentID: studentID,\n      AdmissionDate: new Date().toISOString().slice(0, 10),\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        880
+      ],
+      "id": "f3c61b31-2fc3-4952-813d-f464ba62d217",
+      "name": "Generate Student ID"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger - Admissions": {
+      "main": [
+        [
+          {
+            "node": "Generate Student ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Student ID": {
+      "main": [
+        [
+          {
+            "node": "Send Email - Admission Confirmation1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2736fe10-ab34-4c1b-aee2-caf8f7624b18",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b35aab958c5ffa9d3a9eb8ec04f35f0612bdfdfba50760aa417239be17ecdc0"
+  },
+  "id": "HtKXm63VzGLMzCQE",
+  "tags": []
+}

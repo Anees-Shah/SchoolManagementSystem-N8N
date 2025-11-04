@@ -1,0 +1,266 @@
+{
+  "name": "6. SMS - Exams - Grade calc & Admin Approval Request",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1-iGaSicoQf3gAC_bMt62k-_u64CBs9TPN4F6Xm6kocU",
+          "mode": "list",
+          "cachedResultName": "Exams",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-iGaSicoQf3gAC_bMt62k-_u64CBs9TPN4F6Xm6kocU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-iGaSicoQf3gAC_bMt62k-_u64CBs9TPN4F6Xm6kocU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "name": "Google Sheets Trigger - Exams",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        48
+      ],
+      "id": "f087bd8a-a893-4f68-8541-6ad5ab97e6f7",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "IwLJQrSVRwqO8XBR",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all input items (each representing one exam record)\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const data = item.json;\n\n  // Convert numeric fields safely\n  const marks = parseFloat(data.MarksObtained || 0);\n  const total = parseFloat(data.TotalMarks || 100);\n  const pct = (marks / total) * 100;\n\n  // Calculate grade\n  let grade = 'F';\n  if (pct >= 90) grade = 'A+';\n  else if (pct >= 80) grade = 'A';\n  else if (pct >= 70) grade = 'B';\n  else if (pct >= 60) grade = 'C';\n  else if (pct >= 50) grade = 'D';\n  else grade = 'F';\n\n  // Build output\n  results.push({\n    json: {\n      ExamID: data.ExamID,\n      StudentID: data.StudentID,\n      StudentName: data.StudentName,\n      Subject: data.Subject,\n      MarksObtained: data.MarksObtained,\n      TotalMarks: data.TotalMarks,\n      Grade: grade,\n      ResultPublished: 'No'\n    }\n  });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        48
+      ],
+      "id": "c0623dfa-8b39-4819-89cd-3a78c226a057",
+      "name": "Calculate Grade1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1-iGaSicoQf3gAC_bMt62k-_u64CBs9TPN4F6Xm6kocU",
+          "mode": "list",
+          "cachedResultName": "Exams",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-iGaSicoQf3gAC_bMt62k-_u64CBs9TPN4F6Xm6kocU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-iGaSicoQf3gAC_bMt62k-_u64CBs9TPN4F6Xm6kocU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "Grade": "={{ $json.grade }}",
+            "ExamID": "={{ $json.ExamID }}",
+            "StudentID": "={{ $json.StudentID }}",
+            "Subject": "={{ $json.Subject }}",
+            "MarksObtained": "={{ $json.MarksObtained }}",
+            "TotalMarks": "={{ $json.TotalMarks }}"
+          },
+          "matchingColumns": [
+            "ExamID"
+          ],
+          "schema": [
+            {
+              "id": "ExamID",
+              "displayName": "ExamID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "StudentID",
+              "displayName": "StudentID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "StudentName",
+              "displayName": "StudentName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MarksObtained",
+              "displayName": "MarksObtained",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TotalMarks",
+              "displayName": "TotalMarks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Grade",
+              "displayName": "Grade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ResultPublished",
+              "displayName": "ResultPublished",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        48
+      ],
+      "id": "ea1b16b3-6666-4574-a4de-f188b74e7531",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WZKYAY9tUlUDXAFm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=aneesahmed.shah@gmail.com",
+        "subject": "=Exam Result Ready — {{$json[\"StudentName\"]}} ({{$json[\"Subject\"]}})\n",
+        "message": "=<div style=\"font-family: Arial, sans-serif; background-color: #f9fafc; padding: 20px; border-radius: 10px;\">\n  <h2 style=\"color: #333;\">Exam Result Recorded</h2>\n\n  <p>Dear Administrator,</p>\n\n  <p>The exam result for <strong>{{$json[\"StudentName\"]}}</strong> has been successfully recorded in the system.</p>\n\n  <table style=\"border-collapse: collapse; width: 100%; margin: 20px 0;\">\n    <tr>\n      <td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Exam ID</strong></td>\n      <td style=\"padding: 8px; border: 1px solid #ddd;\">{{$json[\"ExamID\"]}}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Student</strong></td>\n      <td style=\"padding: 8px; border: 1px solid #ddd;\">{{$json[\"StudentName\"]}}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Subject</strong></td>\n      <td style=\"padding: 8px; border: 1px solid #ddd;\">{{$json[\"Subject\"]}}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Marks Obtained</strong></td>\n      <td style=\"padding: 8px; border: 1px solid #ddd;\">{{$json[\"MarksObtained\"]}} / {{$json[\"TotalMarks\"]}}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Grade</strong></td>\n      <td style=\"padding: 8px; border: 1px solid #ddd;\">{{$json[\"Grade\"]}}</td>\n    </tr>\n  </table>\n\n  <p>Thank you for keeping our academic records up to date.</p>\n\n  <p style=\"margin-top: 20px; font-size: 13px; color: #555;\">\n    This is an automated message from the School Examination System (via n8n).\n  </p>\n</div>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        672,
+        48
+      ],
+      "id": "d83c28da-2419-4af8-893c-d607fc25ab3f",
+      "name": "Send a message",
+      "webhookId": "3ebd4291-07e5-438a-b0b1-9cec7e9ddd58",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jXqa38zDEfngyw3f",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger - Exams": {
+      "main": [
+        [
+          {
+            "node": "Calculate Grade1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Grade1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ae4f4726-1baa-43c0-9861-54716615bf31",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b35aab958c5ffa9d3a9eb8ec04f35f0612bdfdfba50760aa417239be17ecdc0"
+  },
+  "id": "rbU3P1ilTTEUkjoE",
+  "tags": []
+}

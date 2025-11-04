@@ -1,0 +1,141 @@
+{
+  "name": "5. SMS Fees reminder (cron)",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 30
+            }
+          ]
+        }
+      },
+      "name": "Cron - Daily 08:30",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -176
+      ],
+      "id": "5ee6f848-3667-4643-91e4-e34b61aa7625"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Mxgocs28UZyD4o8HGywadmksaZmv5gd2DCiWCV1TsHs",
+          "mode": "list",
+          "cachedResultName": "Payments",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Mxgocs28UZyD4o8HGywadmksaZmv5gd2DCiWCV1TsHs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Mxgocs28UZyD4o8HGywadmksaZmv5gd2DCiWCV1TsHs/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        -176
+      ],
+      "id": "58f68a60-5d4d-4107-a38b-94731bd042f0",
+      "name": "Read Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WZKYAY9tUlUDXAFm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input: the previous Google Sheets node returns items where each item.json is an object (like your pasted JSON).\nconst items = $input.all(); \nconst out = [];\n\n// Normalize \"today\" to date-only for safe comparisons\nconst today = new Date();\ntoday.setHours(0,0,0,0);\n\nfor (const it of items) {\n  const r = it.json || {};\n\n  // Normalize and trim Status (some cells have trailing newline characters)\n  const statusRaw = (r.Status === undefined || r.Status === null) ? '' : String(r.Status).trim();\n  const status = statusRaw.toLowerCase();\n\n  // We only want rows where Status is blank (user said: if not blank it's \"Paid\")\n  if (status !== '') continue;\n\n  // Parse PaymentDate safely\n  const pdRaw = r.PaymentDate === undefined || r.PaymentDate === null ? '' : String(r.PaymentDate).trim();\n  if (!pdRaw) continue; // no payment date -> skip\n\n  const payDate = new Date(pdRaw);\n  if (isNaN(payDate.getTime())) {\n    // Try parsing YYYY-MM-DD specifically (sometimes JS Date on certain formats fails)\n    const parts = pdRaw.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})$/);\n    if (parts) {\n      payDate.setFullYear(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]));\n    }\n  }\n  if (isNaN(payDate.getTime())) continue; // still invalid -> skip\n\n  payDate.setHours(0,0,0,0);\n\n  // Overdue if payment date is today or earlier\n  if (payDate <= today) {\n    out.push({\n      json: {\n        row_number: r.row_number,\n        PaymentID: r.PaymentID,\n        StudentID: r.StudentID,\n        StudentName: r.StudentName,\n        ParentName: r.ParentName,\n        ParentEmail: r.ParentEmail,\n        Amount: r.Amount,\n        PaymentDate: r.PaymentDate\n      }\n    });\n  }\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        -176
+      ],
+      "id": "e14dfac2-3da9-4735-9438-19b6e7ab3915",
+      "name": "Find Overdue1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.ParentEmail }}",
+        "subject": "Fees Reminders",
+        "message": "=<div style=\"font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb; border-radius: 10px; border: 1px solid #e0e0e0;\">   <p>Dear {{ $json[\"ParentName\"] }},</p>    <p>     This is a friendly reminder that the school fee for     <strong>{{ $json[\"StudentName\"] }}</strong>     (Student ID: <strong>{{ $json[\"StudentID\"] }}</strong>) is currently <strong>unpaid</strong>.   </p>    <p>     The total outstanding amount is     <strong>{{ $json[\"Amount\"] }}</strong> {{ $json[\"Currency\"] || \"USD\" }}.     Please ensure that payment is completed at your earliest convenience to avoid any interruption to school activities.   </p>    <p>     If you have already made the payment recently, please disregard this message or contact our accounts office to confirm receipt.   </p>    <p>Thank you for your prompt attention and cooperation.</p>    <p style=\"margin-top: 25px;\">     Best regards,<br>     <strong>School Administration</strong><br>     <span style=\"font-size: 0.9em; color: #777;\">ABC International School</span>   </p>    <hr style=\"margin-top: 30px; border: none; border-top: 1px solid #ddd;\">   <p style=\"font-size: 0.85em; color: #888; text-align: center;\">     This is an automated reminder sent by the school’s fee management system. Please do not reply to this email.   </p> </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        912,
+        -176
+      ],
+      "id": "5859273b-4376-407a-a41b-78e9ed07a589",
+      "name": "Send a message1",
+      "webhookId": "9afebf3d-4c73-4b47-b8f6-43f4e9b96ce0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jXqa38zDEfngyw3f",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cron - Daily 08:30": {
+      "main": [
+        [
+          {
+            "node": "Read Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Sheet": {
+      "main": [
+        [
+          {
+            "node": "Find Overdue1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Overdue1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "aa139685-fd45-4655-a507-76d16d974f61",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b35aab958c5ffa9d3a9eb8ec04f35f0612bdfdfba50760aa417239be17ecdc0"
+  },
+  "id": "cETjU7ZQw5ivXeHX",
+  "tags": []
+}
